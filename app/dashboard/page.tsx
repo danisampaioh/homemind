@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const itensEstoque = [
-  { nome: "Arroz", status: "acabando", diasRestantes: 3 },
-  { nome: "Detergente", status: "acabando", diasRestantes: 5 },
-  { nome: "Papel higiênico", status: "ok", diasRestantes: 15 },
+  { nome: "Arroz", diasRestantes: 3 },
+  { nome: "Detergente", diasRestantes: 5 },
+  { nome: "Papel higienico", diasRestantes: 15 },
 ];
 
 const rotinas = [
@@ -31,20 +31,17 @@ function StatusEstoque({ dias }: { dias: number }) {
 }
 
 function StatusRotina({ diasDesdeUltima, frequencia }: { diasDesdeUltima: number; frequencia: number }) {
-  const atrasada = diasDesdeUltima >= frequencia;
-  const proximaDe = diasDesdeUltima >= frequencia - 1;
-
-  if (atrasada) {
+  if (diasDesdeUltima >= frequencia) {
     return (
       <span className="text-xs font-medium text-red-500 bg-red-50 px-2 py-1 rounded-full">
         Em atraso
       </span>
     );
   }
-  if (proximaDe) {
+  if (diasDesdeUltima >= frequencia - 1) {
     return (
       <span className="text-xs font-medium text-yellow-600 bg-yellow-50 px-2 py-1 rounded-full">
-        Amanhã
+        Amanha
       </span>
     );
   }
@@ -56,31 +53,24 @@ function StatusRotina({ diasDesdeUltima, frequencia }: { diasDesdeUltima: number
 }
 
 export default function Dashboard() {
-  const itensAtencao = itensEstoque.filter((i) => i.diasRestantes <= 5);
-  const rotinasAtencao = rotinas.filter((r) => r.diasDesdeUltima >= r.frequencia - 1);
-  const totalAtencao = itensAtencao.length + rotinasAtencao.length;
+  const totalAtencao = itensEstoque.filter((i) => i.diasRestantes <= 5).length +
+    rotinas.filter((r) => r.diasDesdeUltima >= r.frequencia - 1).length;
 
   return (
     <main className="min-h-screen bg-zinc-50 p-4 max-w-sm mx-auto">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6 pt-4">
         <div>
-          <h1 className="text-xl font-semibold">Olá, Daniela 👋</h1>
+          <h1 className="text-xl font-semibold">Ola, Daniela</h1>
           <p className="text-sm text-zinc-500">
-            {totalAtencao === 0
-              ? "Sua casa está em dia!"
-              : `${totalAtencao} itens precisam de atenção`}
+            {totalAtencao === 0 ? "Sua casa esta em dia!" : `${totalAtencao} itens precisam de atencao`}
           </p>
         </div>
         <div className="text-3xl">🏠</div>
       </div>
 
-      {/* Card Estoque */}
       <Card className="mb-4">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            🛒 Itens essenciais
-          </CardTitle>
+          <CardTitle className="text-base">🛒 Itens essenciais</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {itensEstoque.map((item) => (
@@ -95,12 +85,9 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* Card Rotinas */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            🔄 Rotinas da casa
-          </CardTitle>
+          <CardTitle className="text-base">🔄 Rotinas da casa</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {rotinas.map((rotina) => (
