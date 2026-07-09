@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [novaRotina, setNovaRotina] = useState("");
   const [adicionandoItem, setAdicionandoItem] = useState(false);
   const [adicionandoRotina, setAdicionandoRotina] = useState(false);
+  const [estimandoItem, setEstimandoItem] = useState(false);
 
   useEffect(() => { carregarDados(); }, []);
 
@@ -39,10 +40,37 @@ export default function Dashboard() {
     setLoading(false);
   }
 
+  async function estimarDuracao(nomeItem: string, userId: string): Promise<number> {
+    try {
+      const resposta = await fetch("/api/estimar-duracao", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nomeItem, userId }),
+      });
+
+      if (!resposta.ok) {
+        console.error("Falha ao estimar duração, usando padrão de 30 dias.");
+        return 30;
+      }
+
+      const dados = await resposta.json();
+      return dados.diasEstimados ?? 30;
+    } catch (erro) {
+      console.error("Erro ao chamar a IA, usando padrão de 30 dias:", erro);
+      return 30;
+    }
+  }
+
   async function salvarItem() {
     if (!novoItem.trim()) return;
     const { data: { user } } = await supabase.auth.getUser();
-    await supabase.from("itens").insert({ nome: novoItem, dias_restantes: 30, user_id: user?.id });
+    if (!user) return;
+
+    setEstimandoItem(true);
+    const diasEstimados = await estimarDuracao(novoItem, user.id);
+    setEstimandoItem(false);
+
+    await supabase.from("itens").insert({ nome: novoItem, dias_restantes: diasEstimados, user_id: user.id });
     setNovoItem(""); setAdicionandoItem(false); carregarDados();
   }
 
@@ -75,8 +103,17 @@ export default function Dashboard() {
           ))}
           {adicionandoItem ? (
             <div className="flex gap-2">
-              <Input placeholder="Nome do item" value={novoItem} onChange={(e) => setNovoItem(e.target.value)} onKeyDown={(e) => e.key === "Enter" && salvarItem()} autoFocus />
-              <Button size="sm" onClick={salvarItem}>Salvar</Button>
+              <Input
+                placeholder="Nome do item"
+                value={novoItem}
+                onChange={(e) => setNovoItem(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && salvarItem()}
+                disabled={estimandoItem}
+                autoFocus
+              />
+              <Button size="sm" onClick={salvarItem} disabled={estimandoItem}>
+                {estimandoItem ? "Pensando..." : "Salvar"}
+              </Button>
             </div>
           ) : (
             <Button variant="outline" size="sm" className="w-full mt-1" onClick={() => setAdicionandoItem(true)}>+ Adicionar item</Button>
