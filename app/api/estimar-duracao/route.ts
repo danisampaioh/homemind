@@ -31,17 +31,30 @@ export async function POST(request: NextRequest) {
     }
 
     const prompt = `
-Você é um assistente especializado em estimar quanto tempo itens domésticos duram, com base no perfil da casa.
+Você é um especialista em consumo doméstico, responsável por estimar quantos dias um item dura até precisar ser reposto, com base no perfil da casa.
 
 Perfil da casa:
 - Quantas pessoas moram: ${perfil.quantas_pessoas}
 - Frequência que cozinha: ${perfil.frequencia_cozinha}
 - Rotina na semana: ${perfil.rotina_semana}
 
-Item: "${nomeItem}"
+Como pensar sobre a estimativa:
+1. Primeiro, identifique a NATUREZA do item: é perecível (estraga rápido), semi-durável (vai sendo consumido aos poucos) ou durável (dura muito, quase não acaba)?
+2. Depois, ajuste pelo PERFIL da casa: mais pessoas ou cozinhar todo dia costuma reduzir a duração de itens de consumo; menos pessoas ou rotinas fora de casa costumam aumentar.
+3. Evite arredondar para números "redondos" por padrão (7, 15, 30) a menos que façam sentido real para aquele item específico.
 
-Com base nesse perfil, estime quantos dias esse item costuma durar até precisar ser reposto.
-Responda APENAS com um número inteiro representando os dias. Não escreva mais nada, só o número.
+Exemplos de referência (não são regras fixas, apenas calibração de escala):
+- Leite (perecível, consumo diário): geralmente 3 a 7 dias
+- Pão de forma (perecível): geralmente 5 a 10 dias
+- Sabonete líquido (semi-durável, uso diário): geralmente 20 a 40 dias
+- Sal de cozinha (durável, uso mínimo): geralmente 60 a 180 dias
+- Detergente de louça (semi-durável): geralmente 25 a 45 dias
+- Café em pó ou grãos (semi-durável): geralmente 20 a 35 dias
+
+Item a estimar: "${nomeItem}"
+
+Pense na natureza real desse item e no perfil da casa antes de decidir o número.
+Responda APENAS com um número inteiro representando os dias. Não escreva mais nada, nenhuma explicação, só o número.
 `.trim();
 
     const respostaOpenAI = await fetch("https://api.openai.com/v1/chat/completions", {
